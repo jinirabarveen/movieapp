@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>MovieApp</title>
+   
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<style>
+    h3 {
+        margin-left: 30%;
+        margin-top: 0;
+    }
+    /*#movies{
+    margin-left: 40%;
+}*/
+    
+    .movieapp {
+        margin-left: 30%;
+    }
+    
+    .back {
+        background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSF5MVRfXGcpb9c06WKOnTlqhn9vDftWnIfb1FLsrDv__n9o1KHCQ");
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+</style>
+<!--body background="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSF5MVRfXGcpb9c06WKOnTlqhn9vDftWnIfb1FLsrDv__n9o1KHCQ"-->
+
+<body class="back">
+    <div class="container-fluid">
+
+        <img class="logo" src="https://d1zx4fn8ox8446.cloudfront.net/filemanager.rboxfile/a72a0f2192d2448a9519561599f7cad2/51a6ee7d-fe24-4f60-b473-675d29399e1e.png">
+        <h3>10 MOVIES TO WATCH BEFORE I DIE</h3>
+
+    </div>
+    <center>
+        <input type="text" placeholder="Enter the movie Name" id="moviename" />
+        <button type="button" class="btn btn-default" onclick="findmovies()">
+            <span class="glyphicon glyphicon-search"></span> Search
+        </button>
+        <button value="favourite" onclick="displayfavourites()"><span class="glyphicon glyphicon-heart"></span>Favourite</button>
+    </center>
+    <center>
+        <table id="movies" border=1>
+            <th>Moviename</th>
+            <th>Poster</th>
+            <th>Release Date</th>
+        </table>
+    </center>
+    <thead>
+    </thead>
+    <tbody>
+    </tbody>
+
+    <script>
+        //var favouritemovie=[];
+        function findmovies() {
+            $.ajax({
+                url: '/search',
+                type: 'GET',
+                data: {
+                    moviename: document.getElementById('moviename').value
+                },
+                error: function() {
+                    $('#movies').html('<p>An error has occurred</p>');
+                },
+                success: function(data) {
+                    var json_obj = $.parseJSON(data); //parse JSON
+                    var total = json_obj.total_results;
+                    if (total > 10) {
+                        total = 10;
+                    }
+
+                    var movieHTML = '';
+                    //var movieHead += '<tr><th>Title</th><th>Poster</th><th>ReleaseDate</th><th>Add to Favourites</th></tr>';
+                    for (var i = 0; i < total; i++) {
+                        var posterpath = 'http://image.tmdb.org/t/p/w185/' + json_obj.results[i].poster_path;
+                        var movobj = {
+                            title: json_obj.results[i].title,
+                            poster: posterpath,
+                            releasedate: json_obj.results[i].release_date
+                        };
+                        var strobj = JSON.stringify(movobj);
+
+                        movieHTML += '<tr>'
+                        movieHTML += '<td>' + json_obj.results[i].title + '</td>';
+                        movieHTML += '<td>' + '<img src=' + posterpath + '>' + '</td>';
+                        movieHTML += '<td>' + json_obj.results[i].release_date + '</td>';
+                        movieHTML += "<td><button onclick='addfavourites(event)' value='" + strobj + "'><span class='glyphicon glyphicon-heart'></span>Add to Favourite</button></td>";
+                        movieHTML += '</tr>';
+                    }
+                    // Replace table’s tbody html with peopleHTML
+
+                    //$("#movies thead").html(movieHead);
+                    $("#movies tbody").html(movieHTML);
+
+                }
+            });
+        }
+        var favourites = [];
+
+        function addfavourites(event) {
+            var favourite = JSON.parse(event.target.value);
+            favourites.push(favourite);
+            //console.log(favourites[0].title);
+        }
+
+        function displayfavourites() {
+            var movieHTML = '';
+            for (let i = 0; i < favourites.length; i++) {
+                // var posterpath='http://image.tmdb.org/t/p/w185/'+favourites.results[i].poster_path
+                //movieHTML += '<tr><th>Title</th><th>Poster</th><th>ReleaseDate</th></tr>';
+                movieHTML += '<tr>';
+                movieHTML += '<td>' + favourites[i].title + '</td>';
+                movieHTML += '<td>' + '<img src=' + favourites[i].poster + '>' + '</td>';
+                movieHTML += '<td>' + favourites[i].releasedate + '</td>';
+                movieHTML += '</tr>';
+
+            }
+            $("#movies tbody").html(movieHTML);
+        }
+    </script>
+</body>
+
+</html>
